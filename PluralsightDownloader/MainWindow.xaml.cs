@@ -140,13 +140,13 @@
                 await Task.Run(
                     () =>
                         {
-                            UpdateOutputText($"[download] Downloading is starting for '{video.Name}'");
+                            UpdateOutputText($"[download] Downloading is starting for the '{video.Name}' video");
 
                             //var startTime = DateTime.Now;
                             var result = DownloadVideo(data.Key, url, i + 1, video.Category, video.Name);
                             //var endTime = DateTime.Now;
 
-                            UpdateOutputText($"[download] Download is {(result ? "successful" : "unsuccessful")} for '{video.Name}' video");
+                            UpdateOutputText($"[download] Download is {(result ? "successful" : "unsuccessful")} for the '{video.Name}' video");
 
                             // var timeTaken = (int)endTime.Subtract(startTime).TotalMilliseconds;
                             var waitTime = Properties.Settings.Default.WaitTime * 1000; //video.WaitTime * 1000 >= timeTaken ? video.WaitTime * 1000 - timeTaken : 0;
@@ -169,13 +169,13 @@
                                 videos[i].Downloaded = true;
                                 playlist = this.GroupToDictionary(videos);
                                 update(videos);
-                                UpdateOutputText($"[download] Downloading is finished for '{videos[i].Name}' video");
+                                UpdateOutputText($"[download] Downloading is finished for the '{videos[i].Name}' video");
                             }
                         },
                     TaskScheduler.FromCurrentSynchronizationContext());
             }
 
-            UpdateOutputText($"[download] Downloading is finished for '{CourseTitleLabel.Text}' course");
+            UpdateOutputText($"[download] Downloading is finished for the '{CourseTitleLabel.Text}' course");
 
             await Task.Run(
                 () =>
