@@ -82,6 +82,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid>
@@ -113,24 +114,33 @@
                         Content="Download"
                         Style="{DynamicResource MaterialDesignRaisedAccentButton}" />
             </Grid>
+            <StackPanel Grid.Row="1">
+                <TextBlock x:Name="OutputLabel"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center" 
+                           Margin="10 0 0 0"
+                           Text="Output"
+                           Style="{StaticResource MaterialDesignHeadlineTextBlock}" />
+                <TextBlock x:Name="OutputText" Margin="10" Height="25" Text="Press download button to download course.."></TextBlock>
+            </StackPanel>
             <TextBlock Name="CourseTitleLabel"
-                       Grid.Row="1"
+                       Grid.Row="2"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        Style="{StaticResource MaterialDesignHeadlineTextBlock}" />
             <materialDesign:Chip Name="ElapsedChip"
-                                 Grid.Row="1"
+                                 Grid.Row="2"
                                  Margin="20,0"
                                  HorizontalAlignment="Left"
                                  VerticalAlignment="Center"
                                  IsDeletable="False" />
             <materialDesign:Chip Name="ETAChip"
-                                 Grid.Row="1"
+                                 Grid.Row="2"
                                  Margin="20,0"
                                  HorizontalAlignment="Right"
                                  VerticalAlignment="Center"
                                  IsDeletable="False" />
-            <materialDesign:Card Grid.Row="2"
+            <materialDesign:Card Grid.Row="3"
                                  Margin="10"
                                  VerticalAlignment="Stretch">
                 <ScrollViewer>

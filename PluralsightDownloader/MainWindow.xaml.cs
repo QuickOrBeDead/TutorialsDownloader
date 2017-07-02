@@ -48,7 +48,7 @@
             Properties.Settings.Default.Save();
             this.DialogHost.IsOpen = false;
         }
-        
+
         private void CategoryButton_Click(object sender, RoutedEventArgs e)
         {
             var category = (e.Source as Button).Content.ToString();
@@ -63,26 +63,26 @@
             this.UpdateProgress.Visibility = Visibility.Visible;
 
             await Task.Run(() =>
-            {
-                var arguments = @"--update";
-                var psi = new ProcessStartInfo(@"Resources\youtube-dl.exe", arguments);
+                    {
+                        var arguments = @"--update";
+                        var psi = new ProcessStartInfo(@"Resources\youtube-dl.exe", arguments);
 
-                if(!(Debugger.IsAttached || Properties.Settings.Default.ShowConsole))
-                {
-                    psi.CreateNoWindow = true;
-                    psi.UseShellExecute = false;
-                }
+                        if (!(Debugger.IsAttached || Properties.Settings.Default.ShowConsole))
+                        {
+                            psi.CreateNoWindow = true;
+                            psi.UseShellExecute = false;
+                        }
 
-                var process = Process.Start(psi);
-                process.WaitForExit();
-            })
-            .ContinueWith(a =>
-            {
-                this.UpdateButton.IsEnabled = true;
-                this.SaveConfigButton.IsEnabled = true;
-                this.UpdateProgress.Visibility = Visibility.Hidden;
-            },
-            TaskScheduler.FromCurrentSynchronizationContext());
+                        var process = Process.Start(psi);
+                        process.WaitForExit();
+                    })
+                .ContinueWith(a =>
+                        {
+                            this.UpdateButton.IsEnabled = true;
+                            this.SaveConfigButton.IsEnabled = true;
+                            this.UpdateProgress.Visibility = Visibility.Hidden;
+                        },
+                    TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         #endregion
@@ -140,11 +140,16 @@
                 await Task.Run(
                     () =>
                         {
-                            var startTime = DateTime.Now;
-                            var result = this.DownloadVideo(data.Key, url, i + 1, video.Category, video.Name);
-                            var endTime = DateTime.Now;
-                            var timeTaken = (int)endTime.Subtract(startTime).TotalMilliseconds;
-                            var waitTime = video.WaitTime * 1000 >= timeTaken ? video.WaitTime * 1000 - timeTaken : 0;
+                            UpdateOutputText($"[download] Downloading is starting for '{video.Name}'");
+
+                            //var startTime = DateTime.Now;
+                            var result = DownloadVideo(data.Key, url, i + 1, video.Category, video.Name);
+                            //var endTime = DateTime.Now;
+
+                            UpdateOutputText($"[download] Download is {(result ? "successful" : "unsuccessful")} for '{video.Name}' video");
+
+                            // var timeTaken = (int)endTime.Subtract(startTime).TotalMilliseconds;
+                            var waitTime = Properties.Settings.Default.WaitTime * 1000; //video.WaitTime * 1000 >= timeTaken ? video.WaitTime * 1000 - timeTaken : 0;
 
                             if (!result)
                             {
@@ -152,21 +157,25 @@
                                 waitTime = 5 * 1000;
                             }
 
+                            UpdateOutputText($"[wait] Waiting for the next download for {waitTime / 1000} seconds");
                             Thread.Sleep(waitTime);
 
                             return result;
                         }).ContinueWith(
-                            a =>
-                                {
-                                    if (a.Result)
-                                    {
-                                        videos[i].Downloaded = true;
-                                        playlist = this.GroupToDictionary(videos);
-                                        update(videos);
-                                    }
-                                },
-                            TaskScheduler.FromCurrentSynchronizationContext());
+                    a =>
+                        {
+                            if (a.Result)
+                            {
+                                videos[i].Downloaded = true;
+                                playlist = this.GroupToDictionary(videos);
+                                update(videos);
+                                UpdateOutputText($"[download] Downloading is finished for '{videos[i].Name}' video");
+                            }
+                        },
+                    TaskScheduler.FromCurrentSynchronizationContext());
             }
+
+            UpdateOutputText($"[download] Downloading is finished for '{CourseTitleLabel.Text}' course");
 
             await Task.Run(
                 () =>
@@ -181,15 +190,15 @@
 
                         return psi;
                     }).ContinueWith(
-                        a =>
-                            {
-                                if (this.ShutdownToggleSwitch.IsChecked.Value)
-                                {
-                                    Process.Start(a.Result);
-                                    this.Close();
-                                }
-                            },
-                        TaskScheduler.FromCurrentSynchronizationContext());
+                a =>
+                    {
+                        if (this.ShutdownToggleSwitch.IsChecked.Value)
+                        {
+                            Process.Start(a.Result);
+                            this.Close();
+                        }
+                    },
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void LoadSettings()
@@ -224,21 +233,21 @@
                     htmlPack.DocumentNode.Descendants("div")
                         .Where(
                             d =>
-                            d.Attributes["id"] != null
-                            && d.Attributes["id"].Value.Equals("course_modules__accordion"))
+                                d.Attributes["id"] != null
+                                && d.Attributes["id"].Value.Equals("course_modules__accordion"))
                         .FirstOrDefault();
 
                 var divs =
                     toc.Descendants("div")
                         .Where(
                             d =>
-                            d.Attributes["class"] != null
-                            && (d.Attributes["class"].Value.Equals("accordion-title clearfix")
-                                || d.Attributes["class"].Value.Equals("accordion-content clearfix")))
+                                d.Attributes["class"] != null
+                                && (d.Attributes["class"].Value.Equals("accordion-title clearfix")
+                                    || d.Attributes["class"].Value.Equals("accordion-content clearfix")))
                         .ToList();
 
                 var playlist = new List<VideoModel>();
-                for (var i = 0; i < divs.Count; i+=2)
+                for (var i = 0; i < divs.Count; i += 2)
                 {
                     var title = divs[i];
                     var content = divs[i + 1];
@@ -247,8 +256,8 @@
                         title.Descendants("a")
                             .FirstOrDefault(
                                 a =>
-                                a.Attributes["class"] != null
-                                && a.Attributes["class"].Value.StartsWith("accordion-title__title")).InnerText;
+                                    a.Attributes["class"] != null
+                                    && a.Attributes["class"].Value.StartsWith("accordion-title__title")).InnerText;
 
                     category = string.Format(
                         "{0}. {1}",
@@ -260,14 +269,14 @@
                         content.Descendants("span")
                             .Where(
                                 s =>
-                                s.Attributes["class"] != null
-                                && s.Attributes["class"].Value.StartsWith("accordion-content__row__title"))
+                                    s.Attributes["class"] != null
+                                    && s.Attributes["class"].Value.StartsWith("accordion-content__row__title"))
                             .Select(
                                 (v, index) =>
-                                string.Format(
-                                    "{0}. {1}.mp4",
-                                    (index + 1).ToString("D2"),
-                                    WebUtility.HtmlDecode(v.InnerText.Trim())))
+                                    string.Format(
+                                        "{0}. {1}.mp4",
+                                        (index + 1).ToString("D2"),
+                                        WebUtility.HtmlDecode(v.InnerText.Trim())))
                             .ToList();
                     videos =
                         videos.Select(v => string.Join(string.Empty, v.Split(Path.GetInvalidFileNameChars()))).ToList();
@@ -276,8 +285,8 @@
                         content.Descendants("span")
                             .Where(
                                 s =>
-                                s.Attributes["class"] != null
-                                && s.Attributes["class"].Value.StartsWith("accordion-content__row__time"))
+                                    s.Attributes["class"] != null
+                                    && s.Attributes["class"].Value.StartsWith("accordion-content__row__time"))
                             .Select(
                                 t =>
                                     {
@@ -292,13 +301,13 @@
                         Enumerable.Range(0, videos.Count)
                             .Select(
                                 index =>
-                                new VideoModel
-                                    {
-                                        Category = category,
-                                        Name = removeInvalidCharacters(videos[index]),
-                                        WaitTime = waitTimes[index],
-                                        Downloaded = false
-                                    }));
+                                    new VideoModel
+                                        {
+                                            Category = category,
+                                            Name = removeInvalidCharacters(videos[index]),
+                                            WaitTime = waitTimes[index],
+                                            Downloaded = false
+                                        }));
                 }
 
                 var headers = playlist.Select(p => p.Category).Distinct().ToList();
@@ -327,25 +336,56 @@
 
             var arguments =
                 string.Format(
-                    "--username {0} --password {1} -o \"{2}\" --playlist-start {3} --playlist-end {3} --max-downloads 1 --rate-limit 100K \"{4}\"",
+                    "--username {0} --password {1} -o \"{2}\" --playlist-start {3} --playlist-end {3} --max-downloads 1 --rate-limit {5}K \"{4}\"",
                     userName,
                     password,
                     fileName.Replace("%", "%%"),
                     index,
-                    uri);
+                    uri,
+                    Properties.Settings.Default.RateLimit);
 
             var psi = new ProcessStartInfo(@"Resources\youtube-dl.exe", arguments);
 
             if (!Debugger.IsAttached)
             {
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
             }
 
-            var process = Process.Start(psi);
+            var process = new Process { StartInfo = psi };
+
+            if (!Debugger.IsAttached)
+            {
+                process.OutputDataReceived += ProcessOutputDataReceived;
+                process.ErrorDataReceived += ProcessErrorDataReceived;
+            }
+
+            process.Start();
+
+            if (!Debugger.IsAttached)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
             process.WaitForExit();
 
             return File.Exists(fileName);
+        }
+
+        private void ProcessErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            UpdateOutputText(e.Data);
+        }
+
+        private void ProcessOutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            UpdateOutputText(e.Data);
+        }
+        private void UpdateOutputText(string text)
+        {
+            Application.Current.Dispatcher.Invoke(() => { return OutputText.Text = text; });
         }
 
         private Dictionary<VideoModel, List<VideoModel>> GroupToDictionary(List<VideoModel> videos)
@@ -354,18 +394,18 @@
                 videos.GroupBy(v => v.Category)
                     .Select(
                         g =>
-                        new
-                            {
-                                Key =
-                            new VideoModel
+                            new
                                 {
-                                    Category = g.Key,
-                                    Name = g.Key,
-                                    WaitTime = g.Sum(v => v.WaitTime),
-                                    Downloaded = g.Any(v => !v.Downloaded)
-                                },
-                                Value = g.ToList()
-                            })
+                                    Key =
+                                    new VideoModel
+                                        {
+                                            Category = g.Key,
+                                            Name = g.Key,
+                                            WaitTime = g.Sum(v => v.WaitTime),
+                                            Downloaded = g.Any(v => !v.Downloaded)
+                                        },
+                                    Value = g.ToList()
+                                })
                     .ToDictionary(g => g.Key, g => g.Value);
         }
 
