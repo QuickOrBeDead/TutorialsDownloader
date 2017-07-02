@@ -121,7 +121,7 @@
                            Margin="10 0 0 0"
                            Text="Output"
                            Style="{StaticResource MaterialDesignHeadlineTextBlock}" />
-                <TextBlock x:Name="OutputText" Margin="10" Height="25" Text="Press download button to download course.."></TextBlock>
+                <TextBlock x:Name="OutputText" Margin="10" Height="25" Text="Press download button to download the course.."></TextBlock>
             </StackPanel>
             <TextBlock Name="CourseTitleLabel"
                        Grid.Row="2"
